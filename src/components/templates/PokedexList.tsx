@@ -18,25 +18,31 @@ export function PokedexList({
   const [currentPage, setCurrentPage] = useState(1);
   const [pokemonsToLoad, setPokemonsToLoad] = useState<Pokemon[]>([]);
 
-  useEffect(() => {
-    setPokemonsToLoad([...pokemons].slice(0, currentPage * 2));
-  }, [currentPage, pokemons]);
-
   const calculateNumberOfPages = () => {
     return Math.ceil(pokemons.length / 2);
   };
 
-  return pokemonsToLoad.length === 0 ? (
-    <Text style={styles.textCenter}>Aun no tienes pokémos agregados</Text>
-  ) : (
+  useEffect(() => {
+    const pokemonsToDisplay = [...pokemons].slice(0, currentPage * 2);
+    setPokemonsToLoad(pokemonsToDisplay);
+  }, [currentPage, pokemons]);
+
+  const loadMorePokemons = () => {
+    if (currentPage < calculateNumberOfPages()) {
+      setCurrentPage(currentPage + 1);
+    } else {
+      setCurrentPage(calculateNumberOfPages());
+    }
+  };
+
+  return (
     <FlatList
       data={pokemonsToLoad}
+      extraData={pokemons.length}
+      style={styles.list}
       keyExtractor={item => item.name}
-      onEndReached={() => {
-        if (currentPage < calculateNumberOfPages()) {
-          setCurrentPage(currentPage + 1);
-        }
-      }}
+      onScrollEndDrag={loadMorePokemons}
+      onEndReached={loadMorePokemons}
       renderItem={({ item }) => {
         const handleSeeDetails = () => {
           onSeeDetailsPress(item);
@@ -55,6 +61,9 @@ export function PokedexList({
           />
         );
       }}
+      ListEmptyComponent={
+        <Text style={styles.textCenter}>Aun no tienes pokémos agregados</Text>
+      }
     />
   );
 }
@@ -64,4 +73,5 @@ const styles = StyleSheet.create({
     marginTop: 16,
     textAlign: 'center',
   },
+  list: { flex: 1 },
 });

@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  ActivityIndicator,
+  Alert,
+  Platform,
+} from 'react-native';
+import { request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
 import { Button, TextInput } from '../atoms';
 import { User } from '../../types';
@@ -35,6 +42,13 @@ export function EditProfileForm({
   };
 
   const takePhoto = async () => {
+    if (Platform.OS === 'ios') {
+      const permissionResult = await request(PERMISSIONS.IOS.CAMERA);
+      if (permissionResult !== RESULTS.GRANTED) {
+        Alert.alert('No se tiene permiso para acceder a la camara');
+        return;
+      }
+    }
     const result = await launchCamera({
       mediaType: 'photo',
       quality: 0.5,
